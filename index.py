@@ -42,3 +42,9 @@ def searchQ():
     else:
         # 顯示輸入表單 
         return render_template("input.html")
+# 刪除或註解掉原本的 app.run()
+# app.run() 
+
+# 確保 Vercel 可以抓到 app 這個變數
+if __name__ == "__main__":
+    app.run(debug=True)
