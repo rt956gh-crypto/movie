@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>電影搜尋器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center">🎬 電影搜尋系統</h1>
+        
+        <div class="flex gap-2 mb-8">
+            <input id="keyword" type="text" placeholder="請輸入片名關鍵字 (例如: Batman)" 
+                   class="flex-1 p-2 rounded text-black outline-none">
+            <button onclick="searchMovies()" class="bg-blue-600 px-6 py-2 rounded hover:bg-blue-700">搜尋</button>
+        </div>
+
+        <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+
+    <script>
+        async function searchMovies() {
+            const keyword = document.getElementById('keyword').value;
+            const resDiv = document.getElementById('results');
+            if (!keyword) return alert('請輸入關鍵字');
+
+            resDiv.innerHTML = '搜尋中...';
+            
+            // 使用 OMDb 免費 API (這裡用的是測試用的 Key: s=關鍵字&apikey=thewdb)
+            try {
+                const response = await fetch(`https://www.omdbapi.com/?s=${keyword}&apikey=thewdb`);
+                const data = await response.json();
+
+                if (data.Response === "False") {
+                    resDiv.innerHTML = `<p class="col-span-3 text-center text-red-400">找不到相關電影</p>`;
+                    return;
+                }
+
+                resDiv.innerHTML = data.Search.map(movie => `
+                    <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+                        <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x450?text=No+Image'}" 
+                             alt="Poster" class="w-full h-64 object-cover rounded mb-4">
+                        <h3 class="font-bold text-lg mb-2">${movie.Title}</h3>
+                        <p class="text-gray-400 mb-4">年份: ${movie.Year}</p>
+                        <a href="https://www.imdb.com/title/${movie.imdbID}" target="_blank" 
+                           class="text-blue-400 hover:underline">查看詳情頁 →</a>
+                    </div>
+                `).join('');
+            } catch (err) {
+                resDiv.innerHTML = '連線出錯，請稍後再試';
+            }
+        }
+    </script>
+</body>
+</html>
