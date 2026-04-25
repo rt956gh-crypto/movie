@@ -1,3 +1,7 @@
+@app.route("/", methods=["GET", "POST"])
+def index():
+    # 當使用者一進來網頁時，顯示 input.html 表單
+    return render_template("input.html")
 from flask import Flask, render_template, request
 import os
 import json
