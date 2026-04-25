@@ -38,12 +38,18 @@ def searchQ():
         
         for doc in docs:
             data = doc.to_dict()
-            if movie_title in data["title"]:
-                # 顯示片名、海報、介紹頁超鏈結 
-                info += f"<h3>片名：{data['title']}</h3>"
-                info += f"<img src='{data['picture']}' width='200'><br>"
-                info += f"<a href='{data['hyperlink']}' target='_blank'>影片介紹頁面</a><br>"
-                info += f"上映日期：{data['showDate']}<br><br><hr>"
+            # 使用 .get() 來抓資料比較安全，如果欄位不存在會回傳 None 而不會當機
+            title = data.get("title", "無片名")
+            picture = data.get("picture", "")
+            link = data.get("hyperlink", "#")
+            date = data.get("showDate", "未知日期")
+
+            if movie_title in title:
+                info += f"<h3>片名：{title}</h3>"
+                if picture:
+                    info += f"<img src='{picture}' width='200'><br>"
+                info += f"<a href='{link}' target='_blank'>影片介紹頁面</a><br>"
+                info += f"上映日期：{date}<br><br><hr>"
         
         if not info:
             info = "抱歉，查無相關電影資料。"
