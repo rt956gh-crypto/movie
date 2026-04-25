@@ -1,63 +1,96 @@
-from flask import Flask, render_template, request
-import os
-import json
-import firebase_admin
-from firebase_admin import credentials, firestore
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電影爬蟲系統 - 靜宜大學資管系</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-app = Flask(__name__)
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-# 1. Firebase 初始化
-if os.path.exists('serviceAccountKey.json'):
-    cred = credentials.Certificate('serviceAccountKey.json')
-else:
-    # 這是給 Vercel 環境變數使用的邏輯
-    firebase_config = os.getenv('FIREBASE_CONFIG')
-    if firebase_config:
-        cred_dict = json.loads(firebase_config)
-        cred = credentials.Certificate(cred_dict)
-    else:
-        # 如果既沒有檔案也沒有環境變數，這裡會報錯，方便你除錯
-        raise ValueError("找不到 Firebase 金鑰設定")
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 50px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
 
-# 避免重複初始化
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred)
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
 
-db = firestore.client()
+        .subtitle {
+            color: #666;
+            font-size: 1em;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #667eea;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
 
-# 2. 路由設定
-@app.route("/", methods=["POST", "GET"])
-@app.route("/searchQ", methods=["POST", "GET"])
-def searchQ():
-    if request.method == "POST":
-        movie_title = request.form["MovieTitle"]
-        info = ""
-        # 從 Firestore 讀取電影資料 
-        collection_ref = db.collection("電影")
-        docs = collection_ref.order_by("showDate").get()
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.3em;
+        }
+
+        .btn {
+            display: block;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            margin: 20px 0;
+            border-radius: 50px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: #ff6b6b;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary:hover {
+            background: #ee5a52;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕷️ 網路爬蟲</h1>
+        <div class="subtitle">靜宜大學資管系 張哲綸</div>
         
-        for doc in docs:
-            data = doc.to_dict()
-            # 使用 .get() 來抓資料比較安全，如果欄位不存在會回傳 None 而不會當機
-            title = data.get("title", "無片名")
-            picture = data.get("picture", "")
-            link = data.get("hyperlink", "#")
-            date = data.get("showDate", "未知日期")
-
-            if movie_title in title:
-                info += f"<h3>片名：{title}</h3>"
-                if picture:
-                    info += f"<img src='{picture}' width='200'><br>"
-                info += f"<a href='{link}' target='_blank'>影片介紹頁面</a><br>"
-                info += f"上映日期：{date}<br><br><hr>"
+        <h2>🎬 開眼電影網 - 近期上映爬蟲系統</h2>
         
-        if not info:
-            info = "抱歉，查無相關電影資料。"
-        return info + "<br><a href='/'>返回搜尋</a>"
-    else:
-        # 顯示搜尋表單 
-        return render_template("input.html")
-
-# 3. 啟動設定 (Vercel 會自動抓取 app 物件，這段主要用於本地測試)
-if __name__ == "__main__":
-    app.run(debug=True)
+        <a href="/movie" class="btn">🚀 爬取最新電影資料</a>
+        <a href="/search" class="btn btn-secondary">🔍 查詢電影（輸入關鍵字）</a>
+    </div>
+</body>
+</html>
