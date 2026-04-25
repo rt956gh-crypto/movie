@@ -1,7 +1,3 @@
-@app.route("/", methods=["GET", "POST"])
-def index():
-    # 當使用者一進來網頁時，顯示 input.html 表單
-    return render_template("input.html")
 from flask import Flask, render_template, request
 import os
 import json
@@ -10,17 +6,26 @@ from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 
-# 判斷是在 Vercel 還是本地，讀取 Firebase 金鑰 
+# 1. Firebase 初始化
 if os.path.exists('serviceAccountKey.json'):
     cred = credentials.Certificate('serviceAccountKey.json')
 else:
+    # 這是給 Vercel 環境變數使用的邏輯
     firebase_config = os.getenv('FIREBASE_CONFIG')
-    cred_dict = json.loads(firebase_config)
-    cred = credentials.Certificate(cred_dict)
+    if firebase_config:
+        cred_dict = json.loads(firebase_config)
+        cred = credentials.Certificate(cred_dict)
+    else:
+        # 如果既沒有檔案也沒有環境變數，這裡會報錯，方便你除錯
+        raise ValueError("找不到 Firebase 金鑰設定")
 
-firebase_admin.initialize_app(cred)
+# 避免重複初始化
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
+
 db = firestore.client()
 
+# 2. 路由設定
 @app.route("/", methods=["POST", "GET"])
 @app.route("/searchQ", methods=["POST", "GET"])
 def searchQ():
@@ -44,11 +49,9 @@ def searchQ():
             info = "抱歉，查無相關電影資料。"
         return info + "<br><a href='/'>返回搜尋</a>"
     else:
-        # 顯示輸入表單 
+        # 顯示搜尋表單 
         return render_template("input.html")
-# 刪除或註解掉原本的 app.run()
-# app.run() 
 
-# 確保 Vercel 可以抓到 app 這個變數
+# 3. 啟動設定 (Vercel 會自動抓取 app 物件，這段主要用於本地測試)
 if __name__ == "__main__":
     app.run(debug=True)
