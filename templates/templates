@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>電影搜尋</title>
+</head>
+<body>
+    <h1>電影關鍵字查詢</h1>
+    <form method="post" action="/searchQ">
+        請輸入欲查詢的片名關鍵字：
+        <input type="text" name="MovieTitle" required />
+        <button type="submit">確定送出</button>
+    </form>
+</body>
+</html>
